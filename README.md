@@ -11,9 +11,14 @@
 ## Milestone 1 (Friday 3rd April, 5pm)
 
 ### Dataset
-Find a dataset (or multiple) that you will explore. Assess the quality of the data it contains and how much preprocessing / data-cleaning it will require before tackling visualization. We recommend using a standard dataset as this course is not about scraping nor data processing.
+One of the datasets we will use is the Johns Hopkins CSSE's COVID-19 dataset which can be found <a href="https://github.com/CSSEGISandData/COVID-19">here</a>.
+The dataset contains daily data of the new COVID-19 cases by region, starting from 22/01/2020 to the actual date. The data that can be found contains the number of news cases, recoveries and deaths per day.
 
-Hint: some good pointers for finding quality publicly available datasets (Google dataset search, Kaggle, OpenSwissData, SNAP and FiveThirtyEight)
+Another dataset we chose to use is the NY Times dataset about the number of daily cases and deaths per county and state in the United States. The dataset can be found <a href="https://github.com/nytimes/covid-19-data/">here</a>.
+
+We will also use the french governments COVID-19 dataset which can be found <a href="<a href="https://github.com/CSSEGISandData/COVID-19">here</a>.">here</a>. This dataset has more detailed information about the disease. The data is daily and regional infromation about new cases. There are also information about the gender and age of patients as well as different treatment information.
+
+The first two datasets do not require and preprocessing or data-cleaning since they are quite simple, the french governments' dataset contains some, but a daily erratum report is published on their website.
 
 ### Problematic
 Our project aims to bring more information and visualization about the spread of the COVID-19 virus.
