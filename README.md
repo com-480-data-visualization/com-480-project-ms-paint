@@ -30,11 +30,24 @@ We will first compare the different countries in the world, and then focus on th
 ### Exploratory Data Analysis
 
 Pre-processing of the data set you chose:
-# French Dataset:
-Data starts the 2020-02-24, it is available in 3 types departments, region, and for France. We will be focusing on regions of France. Available data is the daily number of people hospitalised, sos-medecin actions related to covid-19. Data on the sex of patients is available. 22423 data-points are stored in a csv format for the regions. 
+
+#### French Dataset:
+Data starts the 2020-02-24, it is available in 3 types departments, region, and for France. We will be focusing on regions of France. 
+
+Available data is the daily number of people hospitalised, sos-medecin actions related to covid-19. Data on the sex of patients is available. 
+
+22423 data-points are stored in a csv format for the regions. 
+
+#### US Dataset:
+The dataset on cases in the US contains data on 55 different "states". 
+
+It contains information on the number of deaths and cases due to the virus in all these states. 
+
+It covers data from January 21st to April 4th and is updated daily. 
+
+On average, states have data on about 30 days. Only 4 of them have information on less that 20 days, we consider them as outliers.
 
 
-Show some basic statistics and get insights about the data
 
 ### Related work
 The evolution of number of hospitalisations and deaths has already been plotted for France : [here](https://datastudio.google.com/u/0/reporting/a62032a5-550a-4a97-bfdc-8ac909f9814b/page/ArPKB)
