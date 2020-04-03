@@ -27,10 +27,9 @@ Exploratory Data Analysis
 Show some basic statistics and get insights about the data
 
 ### Related work
-What others have already done with the data?
-Why is your approach original?
-What source of inspiration do you take? Visualizations that you found on other websites or magazines (might be unrelated to your data).
-In case you are using a dataset that you have already explored in another context (ML or ADA course, semester project...), you are required to share the report of that work to outline the differences with the submission for this class.
+The evolution of number of hospitalisations and deaths has already been plotted for France :https://datastudio.google.com/u/0/reporting/a62032a5-550a-4a97-bfdc-8ac909f9814b/page/ArPKB and regions https://www.lemonde.fr/les-decodeurs/article/2020/04/01/coronavirus-visualisez-le-nombre-de-personnes-hospitalisees-departement-par-departement_6035199_4355770.html . Simulations have been done on the effectiveness of different covid-19 policies : https://exchange.iseesystems.com/public/isee/covid-19-simulator/index.html#page1
+
+We will focus on a smaller case comparing the evolution of covid-19 in different regions of countries. 
 
 
 ## Milestone 2 (Friday 1st May, 5pm)
