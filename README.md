@@ -12,7 +12,7 @@
 
 ### Dataset
 One of the datasets we will use is the Johns Hopkins CSSE's COVID-19 dataset which can be found <a href="https://github.com/CSSEGISandData/COVID-19">here</a>.
-The dataset contains daily data of the new COVID-19 cases by region, starting from 22/01/2020 to the actual date. The data that can be found contains the number of news cases, recoveries and deaths per day.
+The dataset contains daily data of the new COVID-19 cases by region, starting from 22/01/2020 to the actual date. The data contains the number of new cases, recoveries and deaths per day.
 
 Another dataset we chose to use is the NY Times dataset about the number of daily cases and deaths per county and state in the United States. The dataset can be found <a href="https://github.com/nytimes/covid-19-data/">here</a>.
 
@@ -30,6 +30,12 @@ We will first compare the different countries in the world, and then focus on th
 ### Exploratory Data Analysis
 
 Pre-processing of the data set you chose:
+
+#### John Hopkins Dataset:
+The John Hopkins dataset is updated daily.
+In this dataset there is the number of cases, deaths and recoveries for 258 countries, external territories or cruise ships.
+It also contains more specific data about the United States for 3254 distinct locations. 
+The data is also available in daily csv files which contains different provinces for other countries as well, as well as the last data update date.
 
 #### French Dataset:
 Data starts the 2020-02-24, it is available in 3 types departments, region, and for France. We will be focusing on regions of France. 
