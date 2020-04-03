@@ -16,13 +16,15 @@ Find a dataset (or multiple) that you will explore. Assess the quality of the da
 Hint: some good pointers for finding quality publicly available datasets (Google dataset search, Kaggle, OpenSwissData, SNAP and FiveThirtyEight)
 
 ### Problematic
-Frame the general topic of your visualization and the main axis that you want to develop.
+Our project aims to bring more information and visualization about the spread of the COVID-19 virus.
 
-What am I trying to show with my visualization?
-Think of an overview for the project, your motivation, and the target audience.
-Exploratory Data Analysis
+Since most countries have taken strict regulation measures these past few weeks, we hope to observe the impact of those measure on the recovery of the countries and make some comparisons. 
 
-### Pre-processing of the data set you chose:
+We will first compare the different countries in the world, and then focus on the regions of France and the USA to see how a state-based country copes compared to a more centralized one.
+
+### Exploratory Data Analysis
+
+Pre-processing of the data set you chose:
 
 Show some basic statistics and get insights about the data
 
