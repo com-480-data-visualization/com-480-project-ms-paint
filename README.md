@@ -16,7 +16,7 @@ The dataset contains daily data of the new COVID-19 cases by region, starting fr
 
 Another dataset we chose to use is the NY Times dataset about the number of daily cases and deaths per county and state in the United States. The dataset can be found <a href="https://github.com/nytimes/covid-19-data/">here</a>.
 
-We will also use the french governments COVID-19 dataset which can be found <a href="<a href="https://github.com/CSSEGISandData/COVID-19">here</a>.">here</a>. This dataset has more detailed information about the disease. The data is daily and regional infromation about new cases. There are also information about the gender and age of patients as well as different treatment information.
+We will also use the french governments COVID-19 dataset which can be found <a href="https://www.data.gouv.fr/fr/datasets/donnees-des-urgences-hospitalieres-et-de-sos-medecins-relatives-a-lepidemie-de-covid-19/">here</a>. This dataset has more detailed information about the disease. The data is daily and regional infromation about new cases. There are also information about the gender and age of patients as well as different treatment information.
 
 The first two datasets do not require and preprocessing or data-cleaning since they are quite simple, the french governments' dataset contains some, but a daily erratum report is published on their website.
 
