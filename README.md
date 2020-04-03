@@ -30,6 +30,9 @@ We will first compare the different countries in the world, and then focus on th
 ### Exploratory Data Analysis
 
 Pre-processing of the data set you chose:
+# French Dataset:
+Data starts the 2020-02-24, it is available in 3 types departments, region, and for France. We will be focusing on regions of France. Available data is the daily number of people hospitalised, sos-medecin actions related to covid-19. Data on the sex of patients is available. 22423 data-points are stored in a csv format for the regions. 
+
 
 Show some basic statistics and get insights about the data
 
