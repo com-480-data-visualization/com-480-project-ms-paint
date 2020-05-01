@@ -68,8 +68,9 @@ We will focus on a smaller case comparing the evolution of covid-19 in different
 ## Milestone 2 (Friday 1st May, 5pm)
 
 **10% of the final grade**
+Please read milestone2.pdf
 
-A prototype for part 1 can be found [here](https://observablehq.com/d/8d0f9460efcdc7c5)
+A prototype can be found [here](https://observablehq.com/d/8d0f9460efcdc7c5)
 
 
 
