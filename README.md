@@ -69,6 +69,8 @@ We will focus on a smaller case comparing the evolution of covid-19 in different
 
 **10% of the final grade**
 
+A prototype for part 1 can be found [here](https://observablehq.com/d/8d0f9460efcdc7c5)
+
 
 
 
