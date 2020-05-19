@@ -120,6 +120,7 @@ class Globe {
             
             //scale the range input with the available dates
             this.range.attr("max", dates.length - 1);
+            this.range.value = 35;
             
             //Create the color scale. I Chose a linear scale a log scale may be more appropriate.
             let colorScale = d3.scaleLinear()
@@ -128,7 +129,7 @@ class Globe {
                 
                 
             //filter the data for a given day and create a function for easy access
-            let current_data = country_data.filter(d => d.date == "2020-04-14");
+            let current_data = country_data.filter(d => d.date == dates[this.range.value]);
             let casesById = {};
             current_data.forEach(country => {
                 casesById[country.id] = country.cases;
