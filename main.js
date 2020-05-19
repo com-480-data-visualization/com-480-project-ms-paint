@@ -66,6 +66,15 @@ class Globe {
         this.country_outlines_promise = d3.json("data/country_data.json").then((topojson_raw) => {
             return topojson_raw.features;
         });
+        
+        this.data_promise = d3.csv('data/clean/cases_deaths_tests_bycountry_overtime.csv').then((data) => {
+            return data;
+        });
+        
+        let range_div = d3.select('#date_selector');
+        this.range = range_div.append("input")
+                        .attr("type", "range");
+        
 
 
     }
@@ -97,8 +106,39 @@ class Globe {
 
         var svg = this.svg
 
-        Promise.all([this.country_outlines_promise]).then((results) => {
+        Promise.all([this.country_outlines_promise, this.data_promise]).then((results) => {
+            
+            //Load the data for the chloropeth and extract the list of dates
+            //For some reason the dates stay in order. Might want to check if this is the case
+            //under different browsers so far only tested firefox.
+            let country_data = results[1];
+            const dates = [...new Set(country_data.map(d => d.date))]
+            
+            //kept for debugging purposes can be removed
+            console.log(country_data);
+            console.log(dates);
+            
+            //scale the range input with the available dates
+            this.range.attr("max", dates.length - 1);
+            
+            //Create the color scale. I Chose a linear scale a log scale may be more appropriate.
+            let colorScale = d3.scaleLinear()
+                .domain(d3.extent(country_data.map(d => d.cases)))
+                .range(["blue", "red"]);
+                
+                
+            //filter the data for a given day and create a function for easy access
+            let current_data = country_data.filter(d => d.date == "2020-04-14");
+            let casesById = {};
+            current_data.forEach(country => {
+                casesById[country.id] = country.cases;
+            });
 
+            
+            //kept for debugging purposes can be removed
+            console.log(current_data); 
+            
+            
             this.svg.call(d3.drag().on('drag', () => {
 
                     var rotate = projection.rotate()
@@ -132,8 +172,9 @@ class Globe {
                 .data(country_outlines)
                 .enter().append("this.svg:path")
                 .attr("fill", (d) => {
-                    if (this.placesById[d.id]) {
-                        return '#BBD9BA';
+                    if (casesById[d.id]) {
+                        // Current data is an array so we have
+                        return colorScale(casesById[d.id]);
                     }
                     return "#f4f4f4";
                 })
