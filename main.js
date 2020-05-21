@@ -168,114 +168,153 @@ class Globe {
 }
 
 class ScatterPlot {
-    constructor(svg_element_id) {
+    constructor(svg_element_id, comparison_data) {
         this.svg = d3.select('#' + svg_element_id);
         this.height = document.getElementById(svg_element_id).height.baseVal.value;
         this.width = document.getElementById(svg_element_id).width.baseVal.value;
 
 
-        const death_test_promise = d3.csv("data/cases_deaths_tests_bycountry_overtime").then((data) => {
-                data.forEach(function(d) {
-                    d.deaths = +d.deaths;
-                    d.tests = +d.tests;
-                    d.cases_per_million = +d.cases_per_million;
-                    d.deaths_per_million = +d.deaths_per_million;
-                    d.tests_per_thousand = +d.tests_per_thousand;
+        this.death_test_promise = d3.csv(comparison_data).then((data) => {
+            let new_data = [];
+
+            data.forEach(function(d) {
+                new_data.push({
+                    "id": d.id,
+                    "name": d.name,
+                    "date": d.date,
+                    "cases": +d.case,
+                    "deaths": +d.deaths,
+                    "tests": d.tests,
+                    "cases_per_million": d.cases_per_million,
+                    "deaths_per_million": d.deaths_per_million,
+                    "tests_per_thousand": d.tests_per_thousand
                 });
-            };
 
-
-        }
-
-        draw(date, x_axis, y_axis, countries) {
-
-            var margin = {
-                top: 20,
-                right: 20,
-                bottom: 30,
-                left: 30
-            };
-            width = 900 - margin.left - margin.right,
-                height = 480 - margin.top - margin.bottom;
-
-            var tooltip = d3.select("body").append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
-
-            var x = d3.scaleLinear()
-                .range([0, width])
-                .nice();
-
-            var y = d3.scaleLinear()
-                .range([height, 0]);
-
-            var xAxis = d3.axisBottom(x).ticks(12),
-                yAxis = d3.axisLeft(y).ticks(12 * height / width);
-
-            var brush = d3.brush().extent([
-                    [0, 0],
-                    [width, height]
-                ]).on("end", brushended),
-                idleTimeout,
-                idleDelay = 350;
-
-            var svg = d3.select("body").append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            var clip = svg.append("defs").append("svg:clipPath")
-                .attr("id", "clip")
-                .append("svg:rect")
-                .attr("width", width)
-                .attr("height", height)
-                .attr("x", 0)
-                .attr("y", 0);
-
-            var xExtent = d3.extent(data, function(d) {
-                return d.x;
             });
-            var yExtent = d3.extent(data, function(d) {
-                return d.y;
+
+            return new_data;
+
+        });
+
+
+    }
+
+    draw(x_axis, y_axis, countries) {
+
+        console.log(countries)
+
+        var margin = {
+            top: 100,
+            right: 50,
+            bottom: 50,
+            left: 50
+        };
+
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        var x = d3.scalePow()
+            .exponent(1)
+            .range([0, this.width])
+            .nice();
+
+        var y = d3.scalePow()
+            .exponent(1)
+            .range([this.height, 0]);
+
+        var xAxis = d3.axisBottom(x).ticks(12),
+            yAxis = d3.axisLeft(y).ticks(12 * this.height / this.width);
+
+
+        var brush = d3.brush().extent([
+                [0, 0],
+                [this.width, this.height]
+            ]).on("end", brushended),
+            idleTimeout,
+            idleDelay = 350;
+
+        var svg = this.svg.append("svg")
+            .attr("width", this.width + margin.left + margin.right)
+            .attr("height", this.height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var clip = this.svg.append("defs").append("svg:clipPath")
+            .attr("id", "clip")
+            .append("svg:rect")
+            .attr("width", this.width)
+            .attr("height", this.height)
+            .attr("x", 0)
+            .attr("y", 0);
+
+        var svg = this.svg;
+
+        var country_data;
+
+        var scatter = svg.append("g")
+            .attr("id", "scatterplot")
+            .attr("clip-path", "url(#clip)");
+
+        Promise.all([this.death_test_promise]).then((results) => {
+
+            country_data = results[0];
+
+            country_data = country_data.filter(d => d.date == "2020-04-04");
+
+
+            var xExtent = d3.extent(country_data, function(d) {
+                return d[x_axis];
             });
-            x.domain(d3.extent(data, function(d) {
-                return d.x;
-            })).nice();
-            y.domain(d3.extent(data, function(d) {
-                return d.y;
+            var yExtent = d3.extent(country_data, function(d) {
+                return d[y_axis];
+            });
+
+            x.domain(d3.extent(country_data, function(d) {
+                return d[x_axis];
             })).nice();
 
-            var scatter = svg.append("g")
-                .attr("id", "scatterplot")
-                .attr("clip-path", "url(#clip)");
+            y.domain(d3.extent(country_data, function(d) {
+                return d[y_axis];
+            })).nice();
+
 
             scatter.selectAll(".dot")
-                .data(data)
+                .data(country_data)
                 .enter().append("circle")
                 .attr("class", "dot")
-                .attr("r", 4)
+                .attr("r", 7)
                 .attr("cx", function(d) {
-                    return x(d.x);
+                    return x(d[x_axis]);
                 })
                 .attr("cy", function(d) {
-                    return y(d.y);
+                    return y(d[y_axis]);
                 })
-                .attr("opacity", 0.5)
+                .attr("opacity", d => countries.includes(d.id) ? 1.0 : 0.5)
                 .style("fill", "#4292c6");
+
+            scatter.selectAll("text")
+                .data(country_data)
+                .enter()
+                .append("text")
+                // Add your code below this line
+
+                .text(d => countries.includes(d.id) ? d.name : "")
+                .attr("x", d => x(d[x_axis]))
+                .attr("y", d => y(d[y_axis]));
 
             // x axis
             svg.append("g")
                 .attr("class", "x axis")
                 .attr('id', "axis--x")
-                .attr("transform", "translate(0," + height + ")")
+                .attr("transform", "translate(0," + this.height + ")")
                 .call(xAxis);
 
             svg.append("text")
                 .style("text-anchor", "end")
-                .attr("x", width)
-                .attr("y", height - 8)
-                .text("X Label");
+                .attr("x", this.width)
+                .attr("y", this.height - 8)
+                .text(x_axis);
 
             // y axis
             svg.append("g")
@@ -288,68 +327,80 @@ class ScatterPlot {
                 .attr("y", 6)
                 .attr("dy", "1em")
                 .style("text-anchor", "end")
-                .text("Y Label");
+                .text(y_axis);
 
             scatter.append("g")
                 .attr("class", "brush")
                 .call(brush);
 
-            function brushended() {
 
-                var s = d3.event.selection;
-                if (!s) {
-                    if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-                    x.domain(d3.extent(data, function(d) {
-                        return d.x;
-                    })).nice();
-                    y.domain(d3.extent(data, function(d) {
-                        return d.y;
-                    })).nice();
-                } else {
+        });
 
-                    x.domain([s[0][0], s[1][0]].map(x.invert, x));
-                    y.domain([s[1][1], s[0][1]].map(y.invert, y));
-                    scatter.select(".brush").call(brush.move, null);
-                }
-                zoom();
+        function brushended() {
+
+            var s = d3.event.selection;
+            if (!s) {
+                if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+                x.domain(d3.extent(country_data, function(d) {
+                    return d[x_axis];
+                })).nice();
+                y.domain(d3.extent(country_data, function(d) {
+                    return d[y_axis];
+                })).nice();
+            } else {
+
+                x.domain([s[0][0], s[1][0]].map(x.invert, x));
+                y.domain([s[1][1], s[0][1]].map(y.invert, y));
+                scatter.select(".brush").call(brush.move, null);
             }
-
-            function idled() {
-                idleTimeout = null;
-            }
-
-            function zoom() {
-
-                var t = scatter.transition().duration(750);
-                svg.select("#axis--x").transition(t).call(xAxis);
-                svg.select("#axis--y").transition(t).call(yAxis);
-                scatter.selectAll("circle").transition(t)
-                    .attr("cx", function(d) {
-                        return x(d.x);
-                    })
-                    .attr("cy", function(d) {
-                        return y(d.y);
-                    });
-            }
-
+            zoom();
         }
+
+        function idled() {
+            idleTimeout = null;
+        }
+
+        function zoom() {
+
+            var t = scatter.transition().duration(750);
+            svg.select("#axis--x").transition(t).call(xAxis);
+            svg.select("#axis--y").transition(t).call(yAxis);
+            scatter.selectAll("circle").transition(t)
+                .attr("cx", function(d) {
+                    return x(d[x_axis]);
+                })
+                .attr("cy", function(d) {
+                    return y(d[y_axis]);
+                });
+            scatter.selectAll("text").transition(t)
+                .attr("x", function(d) {
+                    return x(d[x_axis]);
+                })
+                .attr("y", function(d) {
+                    return y(d[y_axis]);
+                });
+        }
+
+
     }
 
+}
 
-    function whenDocumentLoaded(action) {
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", action);
-        } else {
-            // `DOMContentLoaded` already fired
-            action();
-        }
+function whenDocumentLoaded(action) {
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", action);
+    } else {
+        // `DOMContentLoaded` already fired
+        action();
     }
+}
 
-    whenDocumentLoaded(() => {
-        plot_object = new Globe('globe');
-        this.plot_object.draw();
-        // plot object is global, you can inspect it in the dev-console
+whenDocumentLoaded(() => {
+    // plot_object = new Globe('globe');
+    // this.plot_object.draw();
+    // plot object is global, you can inspect it in the dev-console
 
-        activity_plot = new ActivityPlot('activity', ['FRA', 'TUR', 'SWE']);
-        this.activity_plot.draw();
-    });
+    scatterplot = new ScatterPlot('activity', "data/clean/cases_deaths_tests_bycountry_overtime.csv");
+    const countries = ['USA', 'GBR', 'NLD', 'SWE'];
+    this.scatterplot.draw("deaths_per_million", "tests_per_thousand", countries);
+});
