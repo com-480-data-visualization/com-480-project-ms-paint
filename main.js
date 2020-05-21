@@ -167,222 +167,153 @@ class Globe {
 
 }
 
-class ScatterPlot {
-    constructor(svg_element_id, comparison_data) {
-        this.svg = d3.select('#' + svg_element_id);
-        this.height = document.getElementById(svg_element_id).height.baseVal.value;
-        this.width = document.getElementById(svg_element_id).width.baseVal.value;
+class LinePlot {
+  constructor(svg_element_id) {
+    this.svg = d3.select('#' + svg_element_id);
+    this.height = document.getElementById(svg_element_id).height.baseVal.value;
+    this.width = document.getElementById(svg_element_id).width.baseVal.value;
+    this.margin = ({
+      top: 20,
+      right: 20,
+      bottom: 30,
+      left: 70
+    });
 
+    var timeparser = d3.utcParse("%Y-%m-%d");
+    this.death_test_promise = d3.csv("data/clean/cases_deaths_tests_bycountry_overtime.csv").then((data) => {
+      let new_data = [];
 
-        this.death_test_promise = d3.csv(comparison_data).then((data) => {
-            let new_data = [];
-
-            data.forEach(function(d) {
-                new_data.push({
-                    "id": d.id,
-                    "name": d.name,
-                    "date": d.date,
-                    "cases": +d.case,
-                    "deaths": +d.deaths,
-                    "tests": d.tests,
-                    "cases_per_million": d.cases_per_million,
-                    "deaths_per_million": d.deaths_per_million,
-                    "tests_per_thousand": d.tests_per_thousand
-                });
-
-            });
-
-            return new_data;
-
+      data.forEach(function(d) {
+        new_data.push({
+          "id": d.id,
+          "name": d.name,
+          "date": timeparser(d.date),
+          "cases": +d.cases,
+          "deaths": +d.deaths,
+          "tests": +d.tests,
+          "cases_per_million": +d.cases_per_million,
+          "deaths_per_million": +d.deaths_per_million,
+          "tests_per_thousand": +d.tests_per_thousand
         });
 
+      });
 
-    }
+      return new_data;
+    });
+  }
 
-    draw(x_axis, y_axis, countries) {
+  draw(category, countries) {
+    var x = d3.scaleUtc().range([this.margin.left, this.width - this.margin.right]);
+    var y = d3.scaleLinear().range([this.height - this.margin.bottom, this.margin.top]);
+    var xAxis = g => g.attr("transform", `translate(0,${this.height - this.margin.bottom})`).call(d3.axisBottom(x).ticks(this.width / 80).tickSizeOuter(0));
+    var yAxis = g => g.attr("transform", `translate(${this.margin.left},0)`)
+      .call(d3.axisLeft(y))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.select(".tick:last-of-type text").clone()
+        .attr("x", 3)
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+        .text(category));
 
-        console.log(countries)
+    var line = d3.line()
+      .defined(d => !isNaN(d))
 
-        var margin = {
-            top: 100,
-            right: 50,
-            bottom: 50,
-            left: 50
-        };
-
-        var tooltip = d3.select("body").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
-
-        var x = d3.scalePow()
-            .exponent(1)
-            .range([0, this.width])
-            .nice();
-
-        var y = d3.scalePow()
-            .exponent(1)
-            .range([this.height, 0]);
-
-        var xAxis = d3.axisBottom(x).ticks(12),
-            yAxis = d3.axisLeft(y).ticks(12 * this.height / this.width);
+    var svg = this.svg
+      .attr("viewBox", [0, 0, this.width, this.height])
+      .style("overflow", "visible");
 
 
-        var brush = d3.brush().extent([
-                [0, 0],
-                [this.width, this.height]
-            ]).on("end", brushended),
-            idleTimeout,
-            idleDelay = 350;
+    Promise.all([this.death_test_promise]).then((results) => {
+      var data = results[0].filter(d => countries.includes(d.name));
+      data = data.reduce(function(r, a) {
+        r[a.name] = r[a.name] || [];
+        r[a.name].push(a);
+        return r;
+      }, Object.create(null));
 
-        var svg = this.svg.append("svg")
-            .attr("width", this.width + margin.left + margin.right)
-            .attr("height", this.height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      var dates = data[countries[0]].map(d => d.date);
 
-        var clip = this.svg.append("defs").append("svg:clipPath")
-            .attr("id", "clip")
-            .append("svg:rect")
-            .attr("width", this.width)
-            .attr("height", this.height)
-            .attr("x", 0)
-            .attr("y", 0);
+      x.domain(d3.extent(dates));
+      y.domain([0, d3.max(countries.map(c => data[c]), c => d3.max(c.map(d => d[category])))]).nice()
 
-        var svg = this.svg;
+      line.x((d, i) => x(dates[i]));
+      line.y(d => y(d));
 
-        var country_data;
+      svg.append("g")
+        .call(xAxis);
 
-        var scatter = svg.append("g")
-            .attr("id", "scatterplot")
-            .attr("clip-path", "url(#clip)");
+      svg.append("g")
+        .call(yAxis);
 
-        Promise.all([this.death_test_promise]).then((results) => {
+      var path = svg.append("g")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .selectAll("path")
+        .data(countries.map(c => data[c]))
+        .enter().append("path")
+        .style("mix-blend-mode", "multiply")
+        .attr("d", d => line(d.map(i => i[category])));
 
-            country_data = results[0];
+      svg.call(hover, path);
 
-            country_data = country_data.filter(d => d.date == "2020-04-04");
+      function hover(svg, path) {
+        var dates = data[countries[0]].map(d => d.date);
+        var data_countries = countries.map(c => data[c]);
+        if ("ontouchstart" in document) svg
+          .style("-webkit-tap-highlight-color", "transparent")
+          .on("touchmove", moved)
+          .on("touchstart", entered)
+          .on("touchend", left)
+        else svg
+          .on("mousemove", moved)
+          .on("mouseenter", entered)
+          .on("mouseleave", left);
 
+        const dot = svg.append("g")
+          .attr("display", "none");
 
-            var xExtent = d3.extent(country_data, function(d) {
-                return d[x_axis];
-            });
-            var yExtent = d3.extent(country_data, function(d) {
-                return d[y_axis];
-            });
+        dot.append("circle")
+          .attr("r", 2.5);
 
-            x.domain(d3.extent(country_data, function(d) {
-                return d[x_axis];
-            })).nice();
+        dot.append("text")
+          .attr("font-family", "sans-serif")
+          .attr("font-size", 10)
+          .attr("text-anchor", "middle")
+          .attr("y", -8);
 
-            y.domain(d3.extent(country_data, function(d) {
-                return d[y_axis];
-            })).nice();
-
-
-            scatter.selectAll(".dot")
-                .data(country_data)
-                .enter().append("circle")
-                .attr("class", "dot")
-                .attr("r", 7)
-                .attr("cx", function(d) {
-                    return x(d[x_axis]);
-                })
-                .attr("cy", function(d) {
-                    return y(d[y_axis]);
-                })
-                .attr("opacity", d => countries.includes(d.id) ? 1.0 : 0.5)
-                .style("fill", "#4292c6");
-
-            scatter.selectAll("text")
-                .data(country_data)
-                .enter()
-                .append("text")
-                // Add your code below this line
-
-                .text(d => countries.includes(d.id) ? d.name : "")
-                .attr("x", d => x(d[x_axis]))
-                .attr("y", d => y(d[y_axis]));
-
-            // x axis
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr('id', "axis--x")
-                .attr("transform", "translate(0," + this.height + ")")
-                .call(xAxis);
-
-            svg.append("text")
-                .style("text-anchor", "end")
-                .attr("x", this.width)
-                .attr("y", this.height - 8)
-                .text(x_axis);
-
-            // y axis
-            svg.append("g")
-                .attr("class", "y axis")
-                .attr('id', "axis--y")
-                .call(yAxis);
-
-            svg.append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", "1em")
-                .style("text-anchor", "end")
-                .text(y_axis);
-
-            scatter.append("g")
-                .attr("class", "brush")
-                .call(brush);
-
-
-        });
-
-        function brushended() {
-
-            var s = d3.event.selection;
-            if (!s) {
-                if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-                x.domain(d3.extent(country_data, function(d) {
-                    return d[x_axis];
-                })).nice();
-                y.domain(d3.extent(country_data, function(d) {
-                    return d[y_axis];
-                })).nice();
-            } else {
-
-                x.domain([s[0][0], s[1][0]].map(x.invert, x));
-                y.domain([s[1][1], s[0][1]].map(y.invert, y));
-                scatter.select(".brush").call(brush.move, null);
-            }
-            zoom();
+        function moved() {
+          d3.event.preventDefault();
+          const mouse = d3.mouse(this);
+          const xm = x.invert(mouse[0]);
+          const ym = y.invert(mouse[1]);
+          const i1 = d3.bisectLeft(dates, xm, 1);
+          const i0 = i1 - 1;
+          const i = xm - dates[i0] > dates[i1] - xm ? i1 : i0;
+          const v = d3.min(data_countries, d => Math.abs(d[i][category] - ym));
+          const s = data_countries.filter(d => Math.abs(d[i][category] - ym) == v)[0];
+          path.attr("stroke", d => d === s ? null : "#ddd").filter(d => d === s).raise();
+          dot.attr("transform", `translate(${x(dates[i])},${y(s[i][category])})`);
+          dot.select("text").text(s[i].name + " : " + s[i][category].toString());
         }
 
-        function idled() {
-            idleTimeout = null;
+        function entered() {
+          path.style("mix-blend-mode", null).attr("stroke", "#ddd");
+          dot.attr("display", null);
         }
 
-        function zoom() {
-
-            var t = scatter.transition().duration(750);
-            svg.select("#axis--x").transition(t).call(xAxis);
-            svg.select("#axis--y").transition(t).call(yAxis);
-            scatter.selectAll("circle").transition(t)
-                .attr("cx", function(d) {
-                    return x(d[x_axis]);
-                })
-                .attr("cy", function(d) {
-                    return y(d[y_axis]);
-                });
-            scatter.selectAll("text").transition(t)
-                .attr("x", function(d) {
-                    return x(d[x_axis]);
-                })
-                .attr("y", function(d) {
-                    return y(d[y_axis]);
-                });
+        function left() {
+          path.style("mix-blend-mode", "multiply").attr("stroke", null);
+          dot.attr("display", "none");
         }
+      }
 
+    });
 
-    }
+  }
+
 
 }
 
@@ -399,8 +330,6 @@ whenDocumentLoaded(() => {
     // plot_object = new Globe('globe');
     // this.plot_object.draw();
     // plot object is global, you can inspect it in the dev-console
-
-    scatterplot = new ScatterPlot('activity', "data/clean/cases_deaths_tests_bycountry_overtime.csv");
-    const countries = ['USA', 'GBR', 'NLD', 'SWE'];
-    this.scatterplot.draw("deaths_per_million", "tests_per_thousand", countries);
+    lineplot = new LinePlot('lineplot');
+    this.lineplot.draw('cases', ['France', 'Switzerland', 'Italy', 'Germany', 'United States']);
 });
