@@ -173,6 +173,11 @@ class ScatterPlot {
         this.height = document.getElementById(svg_element_id).height.baseVal.value;
         this.width = document.getElementById(svg_element_id).width.baseVal.value;
 
+        var tooltip = d3.select('body')
+            .append('div')
+            .attr('id', 'tooltip')
+            .attr('style', 'position: absolute; opacity: 0;');
+
 
         this.death_test_promise = d3.csv(comparison_data).then((data) => {
             let new_data = [];
@@ -184,10 +189,10 @@ class ScatterPlot {
                     "date": d.date,
                     "cases": +d.case,
                     "deaths": +d.deaths,
-                    "tests": d.tests,
-                    "cases_per_million": d.cases_per_million,
-                    "deaths_per_million": d.deaths_per_million,
-                    "tests_per_thousand": d.tests_per_thousand
+                    "tests": +d.tests,
+                    "cases_per_million": +d.cases_per_million,
+                    "deaths_per_million": +d.deaths_per_million,
+                    "tests_per_thousand": +d.tests_per_thousand
                 });
 
             });
@@ -209,10 +214,6 @@ class ScatterPlot {
             bottom: 50,
             left: 50
         };
-
-        var tooltip = d3.select("body").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0);
 
         var x = d3.scalePow()
             .exponent(1)
@@ -260,15 +261,19 @@ class ScatterPlot {
 
             country_data = results[0];
 
-            country_data = country_data.filter(d => d.date == "2020-04-04");
+            country_data = country_data.filter(d => d.date == "2020-04-24");
 
 
             var xExtent = d3.extent(country_data, function(d) {
                 return d[x_axis];
             });
+
             var yExtent = d3.extent(country_data, function(d) {
                 return d[y_axis];
             });
+
+            console.log(yExtent);
+
 
             x.domain(d3.extent(country_data, function(d) {
                 return d[x_axis];
@@ -290,18 +295,17 @@ class ScatterPlot {
                 .attr("cy", function(d) {
                     return y(d[y_axis]);
                 })
-                .attr("opacity", d => countries.includes(d.id) ? 1.0 : 0.5)
-                .style("fill", "#4292c6");
+                .attr("opacity", d => countries.includes(d.id) ? 1.0 : 0.2)
+                .style("fill", "#1a237e ");
+
 
             scatter.selectAll("text")
                 .data(country_data)
                 .enter()
                 .append("text")
-                // Add your code below this line
-
                 .text(d => countries.includes(d.id) ? d.name : "")
                 .attr("x", d => x(d[x_axis]))
-                .attr("y", d => y(d[y_axis]));
+                .attr("y", d => y(d[y_axis]) - 7);
 
             // x axis
             svg.append("g")
@@ -377,9 +381,10 @@ class ScatterPlot {
                     return x(d[x_axis]);
                 })
                 .attr("y", function(d) {
-                    return y(d[y_axis]);
+                    return y(d[y_axis]) - 7;
                 });
         }
+
 
 
     }
@@ -398,7 +403,7 @@ function whenDocumentLoaded(action) {
 whenDocumentLoaded(() => {
     // plot_object = new Globe('globe');
     // this.plot_object.draw();
-    // plot object is global, you can inspect it in the dev-console
+    // plot object is global, you can inspect it in the dev - console
 
     scatterplot = new ScatterPlot('activity', "data/clean/cases_deaths_tests_bycountry_overtime.csv");
     const countries = ['USA', 'GBR', 'NLD', 'SWE'];
